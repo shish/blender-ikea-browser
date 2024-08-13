@@ -29,3 +29,13 @@ wheels = [
 [permissions]
 network = "Download from ikea.com"
 files = "Store downloaded models"
+
+[build]
+paths_exclude_pattern = [
+  "__pycache__/",
+  "/.git/",
+  "/.github/",
+  "/.ruff_cache/",
+  "/venv/",
+  "/*.zip",
+]
