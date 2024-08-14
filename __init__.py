@@ -13,7 +13,7 @@ ikea = IkeaApiWrapper("ie", "en")
 
 
 def _get_thumbnail_icon(itemNo: str, url: t.Optional[str] = None) -> t.Optional[int]:
-    if itemNo not in thumbs:
+    if itemNo not in thumbs and bpy.app.online_access:
         if icon := ikea.get_thumbnail(itemNo, url):
             thumbs.load(itemNo, icon, "IMAGE")
     if itemNo in thumbs:
@@ -55,6 +55,10 @@ class IkeaImportOperator(bpy.types.Operator):
     itemNo: bpy.props.StringProperty()
 
     def execute(self, context) -> t.Set[str]:
+        if not bpy.app.online_access:
+            self.report({"ERROR"}, "IKEA Browser requires online access")
+            return {"CANCELLED"}
+
         try:
             bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo), scale=0.01)
             bpy.context.object["ikeaItemNo"] = self.itemNo
@@ -72,15 +76,13 @@ class IkeaBrowserPanel(bpy.types.Panel):
     bl_region_type = "UI"
     bl_category = "IKEA"
 
-    # @classmethod
-    # def poll(self, context):
-    #    return bpy.app.online_access
-
     def draw(self, context) -> None:
-        layout = self.layout
+        if bpy.app.online_access:
+            self.layout.label(text="IKEA Browser requires online access")
+            return
 
-        row = layout.row()
-        row.prop(context.scene, "ikea_search", text="", icon="VIEWZOOM")
+        layout = self.layout
+        layout.prop(context.scene, "ikea_search", text="", icon="VIEWZOOM")
 
         grid = layout.grid_flow(even_columns=True)
         results = json.loads(context.scene.ikea_results)
@@ -114,6 +116,10 @@ class IkeaProductPanel(bpy.types.Panel):
         row.label(text="Item No")
         row.label(text=ikea.format(itemNo))
 
+        if not bpy.app.online_access:
+            layout.label(text="Enable online access to see more details")
+            return
+
         if icon := _get_thumbnail_icon(itemNo):
             layout.template_icon(icon_value=icon, scale=10)
 
@@ -132,14 +138,17 @@ class IkeaProductPanel(bpy.types.Panel):
 
 
 def _update_search(self, context) -> None:
-    results = ikea.search(context.scene.ikea_search)
+    if bpy.app.online_access:
+        results = ikea.search(context.scene.ikea_search)
+    else:
+        results = []
     context.scene.ikea_results = json.dumps(results)
-    thumbs.clear()
+    # thumbs.clear()
 
 
 def register() -> None:
     bpy.types.Scene.ikea_search = bpy.props.StringProperty(
-        name="Search", default="chair", update=_update_search
+        name="Search", default="", update=_update_search
     )
     bpy.types.Scene.ikea_results = bpy.props.StringProperty(
         name="Results", default="[]"
@@ -150,7 +159,6 @@ def register() -> None:
     bpy.utils.register_class(IkeaImportOperator)
 
     _update_preferences(None, None)
-    ikea.log_in()
 
 
 def unregister() -> None:

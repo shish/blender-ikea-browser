@@ -58,10 +58,8 @@ class IkeaApiWrapper:
         #     json.dump(results, f, indent=4)
         return results
 
-
     def get_pip(self, itemNo: str) -> t.Optional[t.Dict[str, t.Any]]:
-        """
-        """
+        """ """
         cache_path = self.cache_dir / itemNo / "pip.json"
 
         if not cache_path.exists():
@@ -77,7 +75,6 @@ class IkeaApiWrapper:
             return json.loads(cache_path.read_text())
 
         return None
-
 
     def get_thumbnail(self, itemNo: str, url: t.Optional[str]) -> t.Optional[str]:
         """
@@ -98,7 +95,6 @@ class IkeaApiWrapper:
             return str(cache_path)
 
         return None
-
 
     def get_model(self, itemNo: str) -> str:
         cache_path = self.cache_dir / itemNo / "model.usdz"
