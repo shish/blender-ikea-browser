@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   style="clip-rule:evenodd;fill-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2"
+   version="1.1"
+   viewBox="0 0 256 256"
+   xml:space="preserve"
+   id="svg4"
+   sodipodi:docname="blender-ikea.svg"
+   width="256"
+   height="256"
+   inkscape:version="1.3.2 (091e20ef0f, 2023-11-25, custom)"
+   inkscape:export-filename="blender-ikea.png"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"><defs
+   id="defs4">
+            
+            
+        </defs><sodipodi:namedview
+   id="namedview4"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   inkscape:zoom="1.5945946"
+   inkscape:cx="90.618644"
+   inkscape:cy="74"
+   inkscape:window-width="1500"
+   inkscape:window-height="1446"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="0"
+   inkscape:current-layer="svg4" />
+    <title
+   id="title1">Blender logo (without text)</title>
+    <rect
+   style="clip-rule:evenodd;fill:#0058ab;fill-opacity:1;fill-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2"
+   id="rect4"
+   width="255.96332"
+   height="256"
+   x="0"
+   y="0"
+   inkscape:label="blue-bg" /><circle
+   style="clip-rule:evenodd;fill:#fbd914;fill-opacity:1;fill-rule:evenodd;stroke-width:4.37098;stroke-linejoin:round;stroke-miterlimit:2"
+   id="path4"
+   cx="128"
+   cy="128"
+   r="123"
+   inkscape:label="yellow-bg" /><g
+   transform="matrix(0.30927968,0,0,0.30927968,-23.063687,-11.605723)"
+   id="g4">
+        
+        <path
+   d="m 391.79986,450.60053 c 2.2896,-40.82399 22.248,-76.89599 52.48799,-102.38399 29.592,-25.056 69.336,-40.392 112.968,-40.392 43.416,0 83.16,15.3144 112.75199,40.392 30.24,25.488 50.112,61.56 52.488,102.38399 2.2896,41.904 -14.58,81 -44.064,109.944 -30.23999,29.376 -73.00799,47.952 -121.17599,47.952 -48.168,0 -91.152,-18.4464 -121.176,-47.952 -29.59199,-28.944 -46.43999,-67.824 -44.06399,-109.728 z"
+   style="clip-rule:evenodd;fill:#fbd914;fill-opacity:1;fill-rule:nonzero;stroke-width:21.6;stroke-linejoin:round;stroke-miterlimit:2"
+   id="path1" /><path
+   d="m 482.3,445.6 c 1.1766,-20.979 11.433,-39.516 26.973,-52.614 15.207,-12.876 35.631,-20.757 58.053,-20.757 22.311,0 42.735,7.8699 57.942,20.757 15.54,13.098 25.752,31.635 26.973,52.614 1.1766,21.534 -7.4925,41.625 -22.644,56.499 -15.54,15.096 -37.518,24.642 -62.271,24.642 -24.753,0 -46.842,-9.4794 -62.271,-24.642 -15.207,-14.874 -23.865,-34.854 -22.644,-56.388 z"
+   style="fill:#0058ab;fill-opacity:1;fill-rule:nonzero;stroke-width:11.1"
+   id="path2" /><path
+   d="m 349.1,490 c 0.1443,8.214 2.7639,24.198 6.6933,36.63 8.2584,26.418 22.311,50.838 41.736,72.261 19.98,22.089 44.622,39.849 73.038,52.503 29.859,13.209 62.271,19.98 95.904,19.98 33.633,-0.0444 66.045,-6.9264 95.904,-20.313 28.416,-12.765 53.058,-30.525 73.038,-52.725 19.536,-21.645 33.522,-46.065 41.736,-72.483 4.1625,-13.32 6.7932,-26.862 7.8477,-40.404 1.0323,-13.32 0.5994,-26.751 -1.2987,-40.182 -3.7074,-26.085 -12.765,-50.616 -26.64,-72.816 -12.654,-20.535 -29.082,-38.406 -48.618,-53.502 l 0.0444,-0.0333 -196.47,-150.96 c -0.1776,-0.1332 -0.3219,-0.2775 -0.5106,-0.3996 -12.876,-9.9012 -34.632,-9.8679 -48.729,0.0555 -14.319,10.0344 -15.984,26.64 -3.219,37.074 l -0.0555,0.0555 82.029,66.711 -249.75,0.2664 h -0.333 c -20.646,0.0222 -40.515,13.542 -44.4,30.747 -4.0404,17.427 9.99,31.968 31.524,31.968 l -0.0333,0.0777 126.54,-0.2442 -226.44,173.16 c -0.2886,0.2109 -0.5994,0.4329 -0.8658,0.6438 -21.312,16.317 -28.194,43.512 -14.763,60.606 13.653,17.427 42.624,17.538 64.158,0.0999 l 123.21,-101.01 c 0,0 -1.7982,13.653 -1.6539,21.756 z m 317.46,45.621 c -25.419,25.863 -61.05,40.626 -99.456,40.626 -38.517,0.0666 -74.148,-14.43 -99.567,-40.293 -12.432,-12.654 -21.534,-27.084 -27.195,-42.513 -5.5167,-15.207 -7.659,-31.302 -6.2382,-47.508 1.3431,-15.873 6.0717,-31.08 13.653,-44.733 7.4148,-13.431 17.649,-25.641 30.192,-35.964 24.753,-20.091 56.166,-31.08 89.022,-31.08 32.967,-0.0444 64.38,10.7559 89.133,30.858 12.543,10.2564 22.755,22.422 30.192,35.853 7.5813,13.653 12.321,28.749 13.653,44.733 1.3986,16.206 -0.7437,32.301 -6.2604,47.508 -5.6388,15.54 -14.763,29.97 -27.195,42.624 z"
+   style="fill:#0058ab;fill-opacity:1;fill-rule:nonzero;stroke-width:11.1"
+   id="path3" />
+    </g>
+<metadata
+   id="metadata4"><rdf:RDF><cc:Work
+       rdf:about=""><dc:title>Blender logo (without text)</dc:title></cc:Work></rdf:RDF></metadata></svg>
