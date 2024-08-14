@@ -77,7 +77,7 @@ class IkeaBrowserPanel(bpy.types.Panel):
     bl_category = "IKEA"
 
     def draw(self, context) -> None:
-        if bpy.app.online_access:
+        if not bpy.app.online_access:
             self.layout.label(text="IKEA Browser requires online access")
             return
 
