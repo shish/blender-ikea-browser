@@ -38,4 +38,7 @@ paths_exclude_pattern = [
   "/.ruff_cache/",
   "/venv/",
   "/*.zip",
+  "/*.blend",
+  "/*.svg",
+  "/*.png",
 ]
