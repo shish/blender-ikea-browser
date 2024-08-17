@@ -8,7 +8,13 @@ import json
 #   * requests (sync, native code)
 #   * httpx (async, pure python)
 # but we want sync in pure python...
-from . import httpx_sync
+
+# Also: blender wants relative imports, but running this as a script for
+# testing requires absolute imports. So we try both.
+try:
+    from . import httpx_sync
+except ImportError:
+    import httpx_sync
 
 
 class IkeaException(Exception):
@@ -114,3 +120,7 @@ class IkeaApiWrapper:
                 raise IkeaException(f"Error downloading model for Item #{itemNo}: {e}")
 
         return str(cache_path)
+
+if __name__ == "__main__":
+    ikea = IkeaApiWrapper("ie", "en")
+    print(ikea.search("table"))
