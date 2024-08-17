@@ -3,6 +3,7 @@ import ikea_api
 import httpx
 import pathlib
 import json
+import logging
 
 # ikea_api comes with two backends:
 #   * requests (sync, native code)
@@ -15,6 +16,9 @@ try:
     from . import httpx_sync
 except ImportError:
     import httpx_sync
+
+
+log = logging.getLogger(__name__)
 
 
 class IkeaException(Exception):
@@ -36,46 +40,57 @@ class IkeaApiWrapper:
         self.cache_dir = pathlib.Path("./cache")
 
     def log_in(self) -> None:
+        log.debug("Logging in")
         httpx_sync.run(self.auth_api.get_guest_token())
 
     def format(self, itemNo: str) -> str:
         return ikea_api.format_item_code(itemNo)
 
     def search(self, query: str) -> t.List[t.Dict[str, t.Any]]:
+        log.debug("Searching for %s", query)
         search_results = httpx_sync.run(self.search_api.search(query))
-        items = search_results["searchResultPage"]["products"]["main"]["items"]
-        products = [i["product"] for i in items]
-        results = [
-            {
-                "itemNo": p["itemNo"],
-                # "name": p['name'],
-                # "typeName": p['typeName'],
-                # "itemMeasureReferenceText": p['itemMeasureReferenceText'],
-                "mainImageUrl": p["mainImageUrl"],
-                "mainImageAlt": p["mainImageAlt"],
-                "pipUrl": p["pipUrl"],
-            }
-            for p in products
-            if p["itemType"] == "ART"
-        ]
-        # with open("search.json", 'w') as f:
-        #     json.dump(products, f, indent=4)
-        # with open("results.json", 'w') as f:
-        #     json.dump(results, f, indent=4)
+        # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
+
+        results = []
+        for i in search_results["searchResultPage"]["products"]["main"]["items"]:
+            p = i["product"]
+            if p["itemType"] != "ART":
+                continue
+
+            valid = True
+            for field in {"itemNo", "mainImageUrl", "mainImageAlt", "pipUrl"}:
+                if field not in p:
+                    name = p["name"]
+                    log.info(f"{name} is missing {field}")
+                    valid = False
+
+            if valid:
+                results.append(
+                    {
+                        "itemNo": p["itemNo"],
+                        # "name": p['name'],
+                        # "typeName": p['typeName'],
+                        # "itemMeasureReferenceText": p['itemMeasureReferenceText'],
+                        "mainImageUrl": p["mainImageUrl"],
+                        "mainImageAlt": p["mainImageAlt"],
+                        "pipUrl": p["pipUrl"],
+                    }
+                )
         return results
 
     def get_pip(self, itemNo: str) -> t.Optional[t.Dict[str, t.Any]]:
         """ """
+        log.debug("Getting PIP for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "pip.json"
 
         if not cache_path.exists():
             try:
-                print("Downloading pip metadata for ", itemNo)
+                log.info("Downloading pip metadata for %s", itemNo)
                 data = httpx_sync.run(self.pip_api.get_item(itemNo))
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps(data))
             except Exception as e:
-                print(f"Error downloading pip metadata for Item #{itemNo}: {e}")
+                log.exception("Error downloading pip metadata for %s", itemNo)
 
         if cache_path.exists():
             return json.loads(cache_path.read_text())
@@ -86,16 +101,17 @@ class IkeaApiWrapper:
         """
         Get a thumbnail for the given product. If it isn't in the cache already, download it.
         """
+        log.debug("Getting thumbnail for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "thumbnail.jpg"
 
         if not cache_path.exists() and url is not None:
             try:
-                print("Downloading thumbnail for ", itemNo)
+                log.info("Downloading thumbnail for %s", itemNo)
                 data = httpx.get(url).content
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_bytes(data)
             except Exception as e:
-                print(f"Error downloading thumbnail for Item #{itemNo}: {e}")
+                log.exception(f"Error downloading thumbnail for Item #{itemNo}:")
 
         if cache_path.exists():
             return str(cache_path)
@@ -103,9 +119,10 @@ class IkeaApiWrapper:
         return None
 
     def get_model(self, itemNo: str) -> str:
+        log.debug("Getting model for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "model.usdz"
         if not cache_path.exists():
-            print("Downloading model for", itemNo)
+            log.info("Downloading model for %s", itemNo)
             try:
                 rotera_data = httpx_sync.run(self.rotera_api.get_item(itemNo))
                 for model in rotera_data["models"]:
@@ -117,10 +134,24 @@ class IkeaApiWrapper:
                 else:
                     raise IkeaException(f"No 3D model found for Item #{itemNo}")
             except Exception as e:
+                log.exception(f"Error downloading model for Item #{itemNo}:")
                 raise IkeaException(f"Error downloading model for Item #{itemNo}: {e}")
 
         return str(cache_path)
 
+
 if __name__ == "__main__":
+    from pprint import pprint
+    import sys
+    import argparse
+
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s %(message)s"
+    )
     ikea = IkeaApiWrapper("ie", "en")
-    print(ikea.search("table"))
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("query", type=str, nargs="+")
+    args = parser.parse_args()
+
+    pprint(ikea.search(" ".join(args.query)))

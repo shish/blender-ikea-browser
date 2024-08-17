@@ -1,13 +1,15 @@
 import typing as t
 import pathlib
 import json
+import logging
 
 import bpy
-import bpy.utils.previews
+import bpy.utils.previews  # type: ignore
 
 from .ikea_lib import IkeaApiWrapper, IkeaException
 
 
+log = logging.getLogger(__name__)
 thumbs = bpy.utils.previews.new()
 ikea = IkeaApiWrapper("ie", "en")
 
@@ -22,23 +24,26 @@ def _get_thumbnail_icon(itemNo: str, url: t.Optional[str] = None) -> t.Optional[
         return None
 
 
-def _update_preferences(self, context):
+def _init(self, context):
     global ikea
     prefs = bpy.context.preferences.addons[__package__].preferences
+    addon_dir = pathlib.Path(bpy.utils.extension_path_user(__package__))
+
     ikea = IkeaApiWrapper(prefs.country, prefs.language)
-    ikea.cache_dir = pathlib.Path(
-        bpy.utils.extension_path_user(__package__, path="cache", create=True)
+    ikea.cache_dir = addon_dir / "cache"
+
+    logging.basicConfig(
+        level=logging.DEBUG if prefs.debug else logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
     )
+    log.info("Initialized IKEA Browser")
 
 
 class IkeaBrowserPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
-    country: bpy.props.StringProperty(
-        name="Country", default="ie", update=_update_preferences
-    )
-    language: bpy.props.StringProperty(
-        name="Language", default="en", update=_update_preferences
-    )
+    country: bpy.props.StringProperty(name="Country", default="ie", update=_init)  # type: ignore
+    language: bpy.props.StringProperty(name="Language", default="en", update=_init)  # type: ignore
+    debug: bpy.props.BoolProperty(name="Debug", default=False, update=_init)  # type: ignore
 
     def draw(self, context):
         layout = self.layout
@@ -52,7 +57,7 @@ class IkeaImportOperator(bpy.types.Operator):
     bl_idname = "ikea.import"
     bl_label = "Import a product"
 
-    itemNo: bpy.props.StringProperty()
+    itemNo: bpy.props.StringProperty()  # type: ignore
 
     def execute(self, context) -> t.Set[str]:
         if not bpy.app.online_access:
@@ -146,10 +151,11 @@ class IkeaProductPanel(bpy.types.Panel):
             layout.label(text="Enable online access to see more details")
             return
 
-        if icon := _get_thumbnail_icon(itemNo):
+        pip = ikea.get_pip(itemNo)
+
+        if icon := _get_thumbnail_icon(itemNo, pip["mainImage"]["url"]):
             layout.template_icon(icon_value=icon, scale=10)
 
-        pip = ikea.get_pip(itemNo)
         grid = layout.grid_flow(row_major=True, even_rows=False, columns=2)
         grid.label(text="Name")
         grid.label(text=pip["name"])
@@ -184,7 +190,7 @@ def register() -> None:
     bpy.utils.register_class(IkeaProductPanel)
     bpy.utils.register_class(IkeaImportOperator)
 
-    _update_preferences(None, None)
+    _init(None, None)
 
 
 def unregister() -> None:
