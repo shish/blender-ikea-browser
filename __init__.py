@@ -61,7 +61,33 @@ class IkeaImportOperator(bpy.types.Operator):
 
         try:
             bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo), scale=0.01)
-            bpy.context.object["ikeaItemNo"] = self.itemNo
+            # The import function creates a tree of objects
+            #  - Empty (parent)
+            #    - Empty (Meshes)
+            #      - Mesh 1
+            #      - Mesh 2
+            #      - ...
+            #    - Empty (Materials)
+            #
+            # When importing a single-mesh object, the mesh is selected,
+            # but when importing a multi-mesh object, the "Meshes" Empty is
+            # selected instead.
+            #
+            # Either way, we want to move the entire object to the cursor
+            # location, so we need to find the top-level parent.
+            top = bpy.context.object
+            while top.parent:
+                top = top.parent
+            top.location = bpy.context.scene.cursor.location
+
+            # Set the itemNo on all objects so that metadata is available
+            # mo matter which part of the object is selected
+            for obj in [top] + top.children_recursive:
+                obj["ikeaItemNo"] = self.itemNo
+
+            # Select the top-level parent in the GUI in case the user wants
+            # to move it around themselves
+            bpy.context.view_layer.objects.active = top
         except IkeaException as e:
             self.report({"ERROR"}, str(e))
         return {"FINISHED"}
