@@ -142,7 +142,6 @@ class IkeaApiWrapper:
 
 if __name__ == "__main__":
     from pprint import pprint
-    import sys
     import argparse
 
     logging.basicConfig(

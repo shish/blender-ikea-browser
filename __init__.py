@@ -1,6 +1,5 @@
 import typing as t
 import pathlib
-import json
 import logging
 
 import bpy
@@ -12,6 +11,7 @@ from .ikea_lib import IkeaApiWrapper, IkeaException
 log = logging.getLogger(__name__)
 thumbs = bpy.utils.previews.new()
 ikea = IkeaApiWrapper("ie", "en")
+search_results = []
 
 
 def _get_thumbnail_icon(itemNo: str, url: t.Optional[str] = None) -> t.Optional[int]:
@@ -25,6 +25,10 @@ def _get_thumbnail_icon(itemNo: str, url: t.Optional[str] = None) -> t.Optional[
 
 
 def _init(self, context):
+    """
+    Configure global things - gets called once on startup and then again
+    whenever the preferences are changed.
+    """
     global ikea
     prefs = bpy.context.preferences.addons[__package__].preferences
     addon_dir = pathlib.Path(bpy.utils.extension_path_user(__package__))
@@ -116,8 +120,7 @@ class IkeaBrowserPanel(bpy.types.Panel):
         layout.prop(context.scene, "ikea_search", text="", icon="VIEWZOOM")
 
         grid = layout.grid_flow(even_columns=True)
-        results = json.loads(context.scene.ikea_results)
-        for result in results:
+        for result in search_results:
             box = grid.box()
             box.label(text=result["mainImageAlt"])
             if icon := _get_thumbnail_icon(result["itemNo"], result["mainImageUrl"]):
@@ -170,12 +173,11 @@ class IkeaProductPanel(bpy.types.Panel):
 
 
 def _update_search(self, context) -> None:
+    global search_results
     if bpy.app.online_access:
-        results = ikea.search(context.scene.ikea_search)
+        search_results = ikea.search(context.scene.ikea_search)
     else:
-        results = []
-    context.scene.ikea_results = json.dumps(results)
-    # thumbs.clear()
+        search_results = []
 
 
 def register() -> None:
