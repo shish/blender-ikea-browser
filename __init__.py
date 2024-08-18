@@ -14,14 +14,17 @@ ikea = IkeaApiWrapper("ie", "en")
 search_results = []
 
 
-def _get_thumbnail_icon(itemNo: str, url: t.Optional[str] = None) -> t.Optional[int]:
-    if itemNo not in thumbs and bpy.app.online_access:
-        if icon := ikea.get_thumbnail(itemNo, url):
-            thumbs.load(itemNo, icon, "IMAGE")
-    if itemNo in thumbs:
-        return thumbs[itemNo].icon_id
-    else:
-        return None
+def _get_thumbnail_icon(itemNo: str, url: str) -> int:
+    if itemNo not in thumbs:
+        if not bpy.app.online_access:
+            # this function _should_ never be called without online access,
+            # but just in case, let's make extra sure we never make network
+            # calls without it.
+            raise IkeaException("Can't load thumbnail without internet access")
+        filename = ikea.get_thumbnail(itemNo, url)
+        thumbs.load(itemNo, filename, "IMAGE")
+
+    return thumbs[itemNo].icon_id
 
 
 def _init(self, context):
@@ -56,7 +59,9 @@ class IkeaBrowserPreferences(bpy.types.AddonPreferences):
 
 
 class IkeaImportOperator(bpy.types.Operator):
-    """Import the selected product from the search results list"""
+    """
+    Fetch a 3D model from IKEA and import it into the scene.
+    """
 
     bl_idname = "ikea.import"
     bl_label = "Import a product"
@@ -103,7 +108,11 @@ class IkeaImportOperator(bpy.types.Operator):
 
 
 class IkeaBrowserPanel(bpy.types.Panel):
-    """Browse IKEA products"""
+    """
+    Browse IKEA products.
+
+    For each product, add a button for the IkeaImportOperator.
+    """
 
     bl_label = "IKEA Browser"
     bl_idname = "OBJECT_PT_ikea_browser"
@@ -123,14 +132,17 @@ class IkeaBrowserPanel(bpy.types.Panel):
         for result in search_results:
             box = grid.box()
             box.label(text=result["mainImageAlt"])
-            if icon := _get_thumbnail_icon(result["itemNo"], result["mainImageUrl"]):
-                box.template_icon(icon_value=icon, scale=10)
+            icon = _get_thumbnail_icon(result["itemNo"], result["mainImageUrl"])
+            box.template_icon(icon_value=icon, scale=10)
             btn = box.operator(IkeaImportOperator.bl_idname, text="Import")
             btn.itemNo = result["itemNo"]
 
 
 class IkeaProductPanel(bpy.types.Panel):
-    """Show product details"""
+    """
+    If the currently selected object has an "ikeaItemNo" property, display
+    some details about the product and a button to open the IKEA website.
+    """
 
     bl_label = "IKEA Product"
     bl_idname = "OBJECT_PT_ikea_product"
@@ -156,8 +168,8 @@ class IkeaProductPanel(bpy.types.Panel):
 
         pip = ikea.get_pip(itemNo)
 
-        if icon := _get_thumbnail_icon(itemNo, pip["mainImage"]["url"]):
-            layout.template_icon(icon_value=icon, scale=10)
+        icon = _get_thumbnail_icon(itemNo, pip["mainImage"]["url"])
+        layout.template_icon(icon_value=icon, scale=10)
 
         grid = layout.grid_flow(row_major=True, even_rows=False, columns=2)
         grid.label(text="Name")

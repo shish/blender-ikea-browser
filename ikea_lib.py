@@ -78,8 +78,10 @@ class IkeaApiWrapper:
                 )
         return results
 
-    def get_pip(self, itemNo: str) -> t.Optional[t.Dict[str, t.Any]]:
-        """ """
+    def get_pip(self, itemNo: str) -> t.Dict[str, t.Any]:
+        """
+        Get product information for the given item number.
+        """
         log.debug("Getting PIP for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "pip.json"
 
@@ -91,20 +93,18 @@ class IkeaApiWrapper:
                 cache_path.write_text(json.dumps(data))
             except Exception as e:
                 log.exception("Error downloading pip metadata for %s", itemNo)
+                raise IkeaException(f"Error downloading pip metadata for Item #{itemNo}: {e}")
 
-        if cache_path.exists():
-            return json.loads(cache_path.read_text())
+        return json.loads(cache_path.read_text())
 
-        return None
-
-    def get_thumbnail(self, itemNo: str, url: t.Optional[str]) -> t.Optional[str]:
+    def get_thumbnail(self, itemNo: str, url: str) -> str:
         """
-        Get a thumbnail for the given product. If it isn't in the cache already, download it.
+        Get a thumbnail for the given product.
         """
         log.debug("Getting thumbnail for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "thumbnail.jpg"
 
-        if not cache_path.exists() and url is not None:
+        if not cache_path.exists():
             try:
                 log.info("Downloading thumbnail for %s", itemNo)
                 data = httpx.get(url).content
@@ -112,13 +112,16 @@ class IkeaApiWrapper:
                 cache_path.write_bytes(data)
             except Exception as e:
                 log.exception(f"Error downloading thumbnail for Item #{itemNo}:")
+                raise IkeaException(f"Error downloading thumbnail for Item #{itemNo}: {e}")
 
-        if cache_path.exists():
-            return str(cache_path)
-
-        return None
+        return str(cache_path)
 
     def get_model(self, itemNo: str) -> str:
+        """
+        Get a 3D model for the given product.
+
+        Returns the path to the downloaded model in USDZ format.
+        """
         log.debug("Getting model for %s", itemNo)
         cache_path = self.cache_dir / itemNo / "model.usdz"
         if not cache_path.exists():
