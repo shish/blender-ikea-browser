@@ -74,7 +74,7 @@ class IkeaImportOperator(bpy.types.Operator):
             return {"CANCELLED"}
 
         try:
-            bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo), scale=0.01)
+            bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo))
             # The import function creates a tree of objects
             #  - Empty (parent)
             #    - Empty (Meshes)
@@ -94,8 +94,16 @@ class IkeaImportOperator(bpy.types.Operator):
                 top = top.parent
             top.location = bpy.context.scene.cursor.location
 
+            # Flatten the hierarchy so that all meshes are direct children
+            # of the top-level parent
+            for obj in top.children_recursive:
+                if obj.type == "MESH":
+                    obj.parent = top
+                if obj.type == "EMPTY":
+                    bpy.data.objects.remove(obj)
+
             # Set the itemNo on all objects so that metadata is available
-            # mo matter which part of the object is selected
+            # no matter which part of the object is selected
             for obj in [top] + top.children_recursive:
                 obj["ikeaItemNo"] = self.itemNo
 
