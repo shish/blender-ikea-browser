@@ -8,14 +8,7 @@ Note that IKEA still owns the copyright for these models, you probably don't wan
 
 If you work at IKEA and can help me to make this more legit, please get in touch <3
 
-
-TODO
-----
-* Error handling
-* Figure out why only some products have 3D models, filter the search results
-* Figure out why thumbnails don't always show up the first time
-* Multiple pages of search results
-* Throw out all of this custom panel stuff, and build on top of Remote Asset Libraries?? (when that gets released)
+This is very much an early proof-of-concept, check the github issues for an approximation of a roadmap
 
 Dev notes
 ---------

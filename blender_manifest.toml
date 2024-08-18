@@ -35,6 +35,7 @@ paths_exclude_pattern = [
   "__pycache__/",
   "/.git/",
   "/.github/",
+  "/.gitignore",
   "/.mypy_cache/",
   "/.ruff_cache/",
   "/venv/",
