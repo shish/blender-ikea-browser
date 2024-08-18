@@ -74,6 +74,7 @@ class IkeaImportOperator(bpy.types.Operator):
             return {"CANCELLED"}
 
         try:
+            pip = ikea.get_pip(self.itemNo)
             bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo))
             # The import function creates a tree of objects
             #  - Empty (parent)
@@ -106,6 +107,18 @@ class IkeaImportOperator(bpy.types.Operator):
             # no matter which part of the object is selected
             for obj in [top] + top.children_recursive:
                 obj["ikeaItemNo"] = self.itemNo
+
+            # Let's also give things some sensible names, based on the product
+            # number and incrementing a number if there are duplicates
+            base_name = pip["name"]
+            maybe_name = base_name
+            n = 1
+            while bpy.data.objects.get(maybe_name):
+                maybe_name = f"{base_name} ({n+1})"
+                n += 1
+            top.name = maybe_name
+            for n, obj in enumerate(top.children_recursive):
+                obj.name = f"{top.name} Mesh {n+1}"
 
             # Select the top-level parent in the GUI in case the user wants
             # to move it around themselves
