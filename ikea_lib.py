@@ -82,18 +82,18 @@ class IkeaApiWrapper:
         """
         Get product information for the given item number.
         """
-        log.debug("Getting PIP for %s", itemNo)
+        log.debug(f"Getting PIP for #{itemNo}")
         cache_path = self.cache_dir / itemNo / "pip.json"
 
         if not cache_path.exists():
             try:
-                log.info("Downloading pip metadata for %s", itemNo)
+                log.info(f"Downloading PIP for #{itemNo}")
                 data = httpx_sync.run(self.pip_api.get_item(itemNo))
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps(data))
             except Exception as e:
-                log.exception("Error downloading pip metadata for %s", itemNo)
-                raise IkeaException(f"Error downloading pip metadata for Item #{itemNo}: {e}")
+                log.exception(f"Error downloading PIP for #{itemNo}")
+                raise IkeaException(f"Error downloading PIP for #{itemNo}: {e}")
 
         return json.loads(cache_path.read_text())
 
@@ -101,18 +101,18 @@ class IkeaApiWrapper:
         """
         Get a thumbnail for the given product.
         """
-        log.debug("Getting thumbnail for %s", itemNo)
+        log.debug(f"Getting thumbnail for #{itemNo}")
         cache_path = self.cache_dir / itemNo / "thumbnail.jpg"
 
         if not cache_path.exists():
             try:
-                log.info("Downloading thumbnail for %s", itemNo)
+                log.info(f"Downloading thumbnail for #{itemNo}")
                 data = httpx.get(url).content
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_bytes(data)
             except Exception as e:
-                log.exception(f"Error downloading thumbnail for Item #{itemNo}:")
-                raise IkeaException(f"Error downloading thumbnail for Item #{itemNo}: {e}")
+                log.exception(f"Error downloading thumbnail for #{itemNo}:")
+                raise IkeaException(f"Error downloading thumbnail for #{itemNo}: {e}")
 
         return str(cache_path)
 
@@ -122,10 +122,10 @@ class IkeaApiWrapper:
 
         Returns the path to the downloaded model in USDZ format.
         """
-        log.debug("Getting model for %s", itemNo)
+        log.debug(f"Getting model for #{itemNo}")
         cache_path = self.cache_dir / itemNo / "model.usdz"
         if not cache_path.exists():
-            log.info("Downloading model for %s", itemNo)
+            log.info(f"Downloading model for #{itemNo}")
             try:
                 rotera_data = httpx_sync.run(self.rotera_api.get_item(itemNo))
                 for model in rotera_data["models"]:
@@ -135,10 +135,10 @@ class IkeaApiWrapper:
                         cache_path.write_bytes(data)
                         break
                 else:
-                    raise IkeaException(f"No 3D model found for Item #{itemNo}")
+                    raise IkeaException(f"No 3D model found for #{itemNo}")
             except Exception as e:
-                log.exception(f"Error downloading model for Item #{itemNo}:")
-                raise IkeaException(f"Error downloading model for Item #{itemNo}: {e}")
+                log.exception(f"Error downloading model for #{itemNo}:")
+                raise IkeaException(f"Error downloading model for #{itemNo}: {e}")
 
         return str(cache_path)
 
