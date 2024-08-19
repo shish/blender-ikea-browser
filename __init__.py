@@ -217,9 +217,6 @@ def register() -> None:
     bpy.types.Scene.ikea_search = bpy.props.StringProperty(
         name="Search", default="", update=_update_search
     )
-    bpy.types.Scene.ikea_results = bpy.props.StringProperty(
-        name="Results", default="[]"
-    )
     bpy.utils.register_class(IkeaBrowserPreferences)
     bpy.utils.register_class(IkeaBrowserPanel)
     bpy.utils.register_class(IkeaProductPanel)
@@ -230,7 +227,6 @@ def register() -> None:
 
 def unregister() -> None:
     del bpy.types.Scene.ikea_search
-    del bpy.types.Scene.ikea_results
     bpy.utils.unregister_class(IkeaImportOperator)
     bpy.utils.unregister_class(IkeaProductPanel)
     bpy.utils.unregister_class(IkeaBrowserPanel)
