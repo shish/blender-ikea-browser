@@ -48,8 +48,12 @@ class IkeaApiWrapper:
 
     def search(self, query: str) -> t.List[t.Dict[str, t.Any]]:
         log.debug("Searching for %s", query)
-        search_results = httpx_sync.run(self.search_api.search(query))
-        # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
+        try:
+            search_results = httpx_sync.run(self.search_api.search(query))
+            # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
+        except Exception as e:
+            log.exception(f"Error searching for {query}:")
+            raise IkeaException(f"Error searching for {query}: {e}")
 
         results = []
         for i in search_results["searchResultPage"]["products"]["main"]["items"]:
