@@ -88,12 +88,11 @@ class IkeaImportOperator(bpy.types.Operator):
             # but when importing a multi-mesh object, the "Meshes" Empty is
             # selected instead.
             #
-            # Either way, we want to move the entire object to the cursor
-            # location, so we need to find the top-level parent.
+            # Let's normalize by finding the top-level object and working
+            # from there
             top = bpy.context.object
             while top.parent:
                 top = top.parent
-            top.location = bpy.context.scene.cursor.location
 
             # Flatten the hierarchy so that all meshes are direct children
             # of the top-level parent
@@ -123,6 +122,14 @@ class IkeaImportOperator(bpy.types.Operator):
             # Select the top-level parent in the GUI in case the user wants
             # to move it around themselves
             bpy.context.view_layer.objects.active = top
+
+            # Blender uses Z-up; models are imported with Y-up then rotated to face Z;
+            # let's remove the rotation...
+            bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
+
+            # After applying transforms to normalise the object, now we move it
+            # where we want it
+            top.location = bpy.context.scene.cursor.location
         except IkeaException as e:
             self.report({"ERROR"}, str(e))
         return {"FINISHED"}
