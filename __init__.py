@@ -154,7 +154,7 @@ class IkeaBrowserPanel(bpy.types.Panel):
             return
 
         layout = self.layout
-        layout.prop(context.scene, "ikea_search", text="", icon="VIEWZOOM")
+        layout.prop(context.window_manager, "ikea_search", text="", icon="VIEWZOOM")
 
         grid = layout.grid_flow(even_columns=True)
         for result in search_results:
@@ -215,14 +215,14 @@ class IkeaProductPanel(bpy.types.Panel):
 def _update_search(self, context) -> None:
     global search_results
     if bpy.app.online_access:
-        search_results = ikea.search(context.scene.ikea_search)
+        search_results = ikea.search(self.ikea_search)
     else:
         search_results = []
 
 
 def register() -> None:
-    bpy.types.Scene.ikea_search = bpy.props.StringProperty(
-        name="Search", default="", update=_update_search
+    bpy.types.WindowManager.ikea_search = bpy.props.StringProperty(
+        name="Search", default="", update=_update_search, options={'SKIP_SAVE'}
     )
     bpy.utils.register_class(IkeaBrowserPreferences)
     bpy.utils.register_class(IkeaBrowserPanel)
@@ -233,7 +233,7 @@ def register() -> None:
 
 
 def unregister() -> None:
-    del bpy.types.Scene.ikea_search
+    del bpy.types.WindowManager.ikea_search
     bpy.utils.unregister_class(IkeaImportOperator)
     bpy.utils.unregister_class(IkeaProductPanel)
     bpy.utils.unregister_class(IkeaBrowserPanel)
