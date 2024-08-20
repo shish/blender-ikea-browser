@@ -166,6 +166,9 @@ class IkeaBrowserPanel(bpy.types.Panel):
             btn.itemNo = result["itemNo"]
 
 
+_last_itemNo = None
+_last_pip = None
+
 class IkeaProductPanel(bpy.types.Panel):
     """
     If the currently selected object has an "ikeaItemNo" property, display
@@ -183,6 +186,8 @@ class IkeaProductPanel(bpy.types.Panel):
         return context.object and context.object.get("ikeaItemNo")
 
     def draw(self, context) -> None:
+        global _last_pip, _last_itemNo
+
         layout = self.layout
         itemNo = context.object.get("ikeaItemNo")
 
@@ -194,7 +199,12 @@ class IkeaProductPanel(bpy.types.Panel):
             layout.label(text="Enable online access to see more details")
             return
 
-        pip = ikea.get_pip(itemNo)
+        if itemNo == _last_itemNo:
+            pip = _last_pip
+        else:
+            pip = ikea.get_pip(itemNo)
+            _last_itemNo = itemNo
+            _last_pip = pip
 
         icon = _get_thumbnail_icon(itemNo, pip["mainImage"]["url"])
         layout.template_icon(icon_value=icon, scale=10)
