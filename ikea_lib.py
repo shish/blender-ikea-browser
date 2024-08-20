@@ -51,6 +51,7 @@ class IkeaApiWrapper:
         try:
             search_results = httpx_sync.run(self.search_api.search(query))
             # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
+            # search_results = json.loads((self.cache_dir.parent / "search.json").read_text())
         except Exception as e:
             log.exception(f"Error searching for {query}:")
             raise IkeaException(f"Error searching for {query}: {e}")
