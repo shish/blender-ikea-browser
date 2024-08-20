@@ -22,7 +22,12 @@ def _get_thumbnail_icon(itemNo: str, url: str) -> int:
             # calls without it.
             raise IkeaException("Can't load thumbnail without internet access")
         filename = ikea.get_thumbnail(itemNo, url)
-        thumbs.load(itemNo, filename, "IMAGE")
+        ip = thumbs.load(itemNo, filename, "IMAGE")
+
+        # it appears that images don't always fully load when thumbs.load()
+        # is called, but accessing the image_size property forces the image
+        # to load fully???
+        _wat = ip.image_size[0] + ip.image_size[1]
 
     return thumbs[itemNo].icon_id
 
