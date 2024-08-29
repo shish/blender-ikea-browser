@@ -158,7 +158,18 @@ if __name__ == "__main__":
     ikea = IkeaApiWrapper("ie", "en")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("query", type=str, nargs="+")
+    subparsers = parser.add_subparsers(dest="cmd")
+    search_parser = subparsers.add_parser('search')
+    search_parser.add_argument("query", type=str, nargs="+")
+    metadata_parser = subparsers.add_parser('metadata')
+    metadata_parser.add_argument("itemNo", type=str)
+    model_parser = subparsers.add_parser('model')
+    model_parser.add_argument("itemNo", type=str)
     args = parser.parse_args()
 
-    pprint(ikea.search(" ".join(args.query)))
+    if args.cmd == "search":
+        pprint(ikea.search(" ".join(args.query)))
+    if args.cmd == "metadata":
+        pprint(ikea.get_pip(args.itemNo))
+    if args.cmd == "model":
+        pprint(ikea.get_model(args.itemNo))
