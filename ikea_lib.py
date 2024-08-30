@@ -161,7 +161,7 @@ class IkeaApiWrapper:
                     headers=headers,
                 )
                 log.debug("Model metadata: %r", rotera_data)
-                data = urllib.request.urlopen(rotera_data["modelUrl"]).read()
+                data = self._get(rotera_data["modelUrl"])
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_bytes(data)
             except Exception as e:
