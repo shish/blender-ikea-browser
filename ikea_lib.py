@@ -119,6 +119,8 @@ class IkeaApiWrapper:
     def get_thumbnail(self, itemNo: str, url: str) -> str:
         """
         Get a thumbnail for the given product.
+
+        Returns the path to the downloaded thumbnail in JPEG format.
         """
         log.debug(f"Getting thumbnail for #{itemNo}")
         cache_path = self.cache_dir / itemNo / "thumbnail.jpg"
