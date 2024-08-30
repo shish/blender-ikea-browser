@@ -83,9 +83,11 @@ class IkeaImportOperator(bpy.types.Operator):
             bpy.ops.import_scene.gltf(filepath=ikea.get_model(self.itemNo))
 
             for obj in bpy.context.selected_objects:
+                assert isinstance(obj, bpy.types.Object)
                 obj["ikeaItemNo"] = self.itemNo
                 obj.name = pip["name"]
-                obj.location = bpy.context.scene.cursor.location
+                if not obj.parent:
+                    obj.location = bpy.context.scene.cursor.location
         except IkeaException as e:
             self.report({"ERROR"}, str(e))
         return {"FINISHED"}
