@@ -1,22 +1,10 @@
 import typing as t
-import ikea_api
-import httpx
 import pathlib
 import json
 import logging
-
-# ikea_api comes with two backends:
-#   * requests (sync, native code)
-#   * httpx (async, pure python)
-# but we want sync in pure python...
-
-# Also: blender wants relative imports, but running this as a script for
-# testing requires absolute imports. So we try both.
-try:
-    from . import httpx_sync
-except ImportError:
-    import httpx_sync
-
+import re
+import urllib.request
+import urllib.parse
 
 log = logging.getLogger(__name__)
 
@@ -26,30 +14,55 @@ class IkeaException(Exception):
 
 
 class IkeaApiWrapper:
-    """
-    A wrapper for the ikea_api python module, adding caching and some convenience methods.
-    """
-
     def __init__(self, country: str, language: str):
-        self.constants = ikea_api.Constants(country=country, language=language)
-        self.auth_api = ikea_api.Auth(self.constants)
-        self.search_api = ikea_api.Search(self.constants)
-        self.pip_api = ikea_api.PipItem(self.constants)
-        self.rotera_api = ikea_api.RoteraItem(self.constants)
-
+        self.country = country
+        self.language = language
         self.cache_dir = pathlib.Path("./cache")
 
-    def log_in(self) -> None:
-        log.debug("Logging in")
-        httpx_sync.run(self.auth_api.get_guest_token())
+    def _get(
+        self,
+        url: str,
+        *args,
+        params: t.Dict[str, str] = {},
+        headers: t.Dict[str, str] = {},
+    ) -> str:
+        try:
+            return urllib.request.urlopen(
+                urllib.request.Request(
+                    url + "?" + urllib.parse.urlencode(params), headers=headers
+                )
+            ).read()
+        except Exception as e:
+            log.exception(f"Error fetching {url}:")
+            raise IkeaException(f"Error fetching {url}: {e}")
+
+    def _get_json(
+        self,
+        url: str,
+        *args,
+        params: t.Dict[str, str] = {},
+        headers: t.Dict[str, str] = {},
+    ) -> t.Dict[str, t.Any]:
+        return json.loads(self._get(url, *args, params=params, headers=headers))
 
     def format(self, itemNo: str) -> str:
-        return ikea_api.format_item_code(itemNo)
+        itemNo = re.sub(r"[^0-9]", "", itemNo)
+        return itemNo[0:3] + "." + itemNo[3:6] + "." + itemNo[6:8]
 
     def search(self, query: str) -> t.List[t.Dict[str, t.Any]]:
         log.debug("Searching for %s", query)
         try:
-            search_results = httpx_sync.run(self.search_api.search(query))
+            url = f"https://sik.search.blue.cdtapps.com/{self.country}/{self.language}/search-result-page"
+            params = {
+                "autocorrect": "true",
+                "subcategories-style": "tree-navigation",
+                "types": "PRODUCT",
+                "q": query,
+                "size": "24",
+                "c": "sr",
+                "v": "20210322",
+            }
+            search_results = self._get_json(url, params=params)
             # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
             # search_results = json.loads((self.cache_dir.parent / "search.json").read_text())
         except Exception as e:
@@ -93,7 +106,8 @@ class IkeaApiWrapper:
         if not cache_path.exists():
             try:
                 log.info(f"Downloading PIP for #{itemNo}")
-                data = httpx_sync.run(self.pip_api.get_item(itemNo))
+                url = f"https://www.ikea.com/{self.country}/{self.language}/products/{itemNo[5:]}/{itemNo}.json"
+                data = self._get_json(url)
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps(data))
             except Exception as e:
@@ -112,7 +126,7 @@ class IkeaApiWrapper:
         if not cache_path.exists():
             try:
                 log.info(f"Downloading thumbnail for #{itemNo}")
-                data = httpx.get(url).content
+                data = self._get(url)
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_bytes(data)
             except Exception as e:
@@ -125,22 +139,31 @@ class IkeaApiWrapper:
         """
         Get a 3D model for the given product.
 
-        Returns the path to the downloaded model in USDZ format.
+        Returns the path to the downloaded model in GLB format.
         """
         log.debug(f"Getting model for #{itemNo}")
-        cache_path = self.cache_dir / itemNo / "model.usdz"
+        cache_path = self.cache_dir / itemNo / "model.glb"
         if not cache_path.exists():
             log.info(f"Downloading model for #{itemNo}")
             try:
-                rotera_data = httpx_sync.run(self.rotera_api.get_item(itemNo))
-                for model in rotera_data["models"]:
-                    if model["format"] == "usdz":
-                        data = httpx.get(model["url"]).content
-                        cache_path.parent.mkdir(parents=True, exist_ok=True)
-                        cache_path.write_bytes(data)
-                        break
-                else:
-                    raise IkeaException(f"No 3D model found for #{itemNo}")
+                # This ID appears to be hard-coded in the website source code?
+                headers = {"X-Client-Id": "4863e7d2-1428-4324-890b-ae5dede24fc6"}
+                rotera_exists = self._get_json(
+                    f"https://web-api.ikea.com/{self.country}/{self.language}/rotera/data/exists/{itemNo}",
+                    headers=headers,
+                )
+                log.debug("Exists data: %r", rotera_exists)
+                if not rotera_exists["exists"]:
+                    raise IkeaException(f"No model available for #{itemNo}")
+
+                rotera_data = self._get_json(
+                    f"https://web-api.ikea.com/{self.country}/{self.language}/rotera/data/model/{itemNo}",
+                    headers=headers,
+                )
+                log.debug("Model metadata: %r", rotera_data)
+                data = urllib.request.urlopen(rotera_data["modelUrl"]).read()
+                cache_path.parent.mkdir(parents=True, exist_ok=True)
+                cache_path.write_bytes(data)
             except Exception as e:
                 log.exception(f"Error downloading model for #{itemNo}:")
                 raise IkeaException(f"Error downloading model for #{itemNo}: {e}")
@@ -149,27 +172,29 @@ class IkeaApiWrapper:
 
 
 if __name__ == "__main__":
-    from pprint import pprint
     import argparse
 
     logging.basicConfig(
         level=logging.DEBUG, format="%(asctime)s %(levelname)s %(name)s %(message)s"
     )
-    ikea = IkeaApiWrapper("ie", "en")
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("--country", default="ie")
+    parser.add_argument("--language", default="en")
     subparsers = parser.add_subparsers(dest="cmd")
-    search_parser = subparsers.add_parser('search')
+    auth_parser = subparsers.add_parser("auth")
+    search_parser = subparsers.add_parser("search")
     search_parser.add_argument("query", type=str, nargs="+")
-    metadata_parser = subparsers.add_parser('metadata')
+    metadata_parser = subparsers.add_parser("metadata")
     metadata_parser.add_argument("itemNo", type=str)
-    model_parser = subparsers.add_parser('model')
+    model_parser = subparsers.add_parser("model")
     model_parser.add_argument("itemNo", type=str)
     args = parser.parse_args()
 
+    ikea = IkeaApiWrapper(args.country, args.language)
     if args.cmd == "search":
-        pprint(ikea.search(" ".join(args.query)))
+        print(json.dumps(ikea.search(" ".join(args.query)), indent=4))
     if args.cmd == "metadata":
-        pprint(ikea.get_pip(args.itemNo))
+        print(json.dumps(ikea.get_pip(args.itemNo), indent=4))
     if args.cmd == "model":
-        pprint(ikea.get_model(args.itemNo))
+        print(ikea.get_model(args.itemNo))

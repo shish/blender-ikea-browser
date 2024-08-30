@@ -2,3 +2,5 @@
 *.json
 venv
 wheels
+__pycache__
+cache

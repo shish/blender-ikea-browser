@@ -12,15 +12,10 @@ This is very much an early proof-of-concept, check the github issues for an appr
 
 Dev notes
 ---------
-Blender 4.2.0 uses python 3.11 specifically, so use that to install bpy and create a virtualenv for testing:
+Blender 4.2.0 uses python 3.11 specifically, so use that to install bpy and create a virtualenv for if you want to have IDE autocompletions and such:
 ```
 python3.11 -m venv venv
-venv/bin/pip install 'ikea_api[httpx]' bpy blender-stubs
-```
-
-Add dependencies to be packaged:
-```
-pip wheel 'ikea_api[httpx]' -w ./wheels
+venv/bin/pip install bpy blender-stubs
 ```
 
 Build the addon .zip file:

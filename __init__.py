@@ -80,61 +80,12 @@ class IkeaImportOperator(bpy.types.Operator):
 
         try:
             pip = ikea.get_pip(self.itemNo)
-            bpy.ops.wm.usd_import(filepath=ikea.get_model(self.itemNo))
-            # The import function creates a tree of objects
-            #  - Empty (parent)
-            #    - Empty (Meshes)
-            #      - Mesh 1
-            #      - Mesh 2
-            #      - ...
-            #    - Empty (Materials)
-            #
-            # When importing a single-mesh object, the mesh is selected,
-            # but when importing a multi-mesh object, the "Meshes" Empty is
-            # selected instead.
-            #
-            # Let's normalize by finding the top-level object and working
-            # from there
-            top = bpy.context.object
-            while top.parent:
-                top = top.parent
+            bpy.ops.import_scene.gltf(filepath=ikea.get_model(self.itemNo))
 
-            # Flatten the hierarchy so that all meshes are direct children
-            # of the top-level parent
-            for obj in top.children_recursive:
-                if obj.type == "MESH":
-                    obj.parent = top
-                if obj.type == "EMPTY":
-                    bpy.data.objects.remove(obj)
-
-            # Set the itemNo on all objects so that metadata is available
-            # no matter which part of the object is selected
-            for obj in [top] + top.children_recursive:
+            for obj in bpy.context.selected_objects:
                 obj["ikeaItemNo"] = self.itemNo
-
-            # Let's also give things some sensible names, based on the product
-            # number and incrementing a number if there are duplicates
-            base_name = pip["name"]
-            maybe_name = base_name
-            n = 1
-            while bpy.data.objects.get(maybe_name):
-                maybe_name = f"{base_name} ({n+1})"
-                n += 1
-            top.name = maybe_name
-            for n, obj in enumerate(top.children_recursive):
-                obj.name = f"{top.name} Mesh {n+1}"
-
-            # Select the top-level parent in the GUI in case the user wants
-            # to move it around themselves
-            bpy.context.view_layer.objects.active = top
-
-            # Blender uses Z-up; models are imported with Y-up then rotated to face Z;
-            # let's remove the rotation...
-            bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
-
-            # After applying transforms to normalise the object, now we move it
-            # where we want it
-            top.location = bpy.context.scene.cursor.location
+                obj.name = pip["name"]
+                obj.location = bpy.context.scene.cursor.location
         except IkeaException as e:
             self.report({"ERROR"}, str(e))
         return {"FINISHED"}
@@ -173,6 +124,7 @@ class IkeaBrowserPanel(bpy.types.Panel):
 
 _last_itemNo = None
 _last_pip = None
+
 
 class IkeaProductPanel(bpy.types.Panel):
     """
@@ -237,7 +189,7 @@ def _update_search(self, context) -> None:
 
 def register() -> None:
     bpy.types.WindowManager.ikea_search = bpy.props.StringProperty(
-        name="Search", default="", update=_update_search, options={'SKIP_SAVE'}
+        name="Search", default="", update=_update_search, options={"SKIP_SAVE"}
     )
     bpy.utils.register_class(IkeaBrowserPreferences)
     bpy.utils.register_class(IkeaBrowserPanel)

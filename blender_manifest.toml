@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "ikea_browser"
-version = "0.0.6"
+version = "0.1.0"
 name = "IKEA Browser"
 tagline = "Search and import models from ikea.com"
 maintainer = "Shish <shish@shishnet.org>"
@@ -14,17 +14,7 @@ license = [
 copyright = [
   "2024 Shish",
 ]
-wheels = [
-  "./wheels/anyio-4.4.0-py3-none-any.whl",
-  "./wheels/certifi-2024.7.4-py3-none-any.whl",
-  "./wheels/h11-0.14.0-py3-none-any.whl",
-  "./wheels/httpcore-0.16.3-py3-none-any.whl",
-  "./wheels/httpx-0.23.3-py3-none-any.whl",
-  "./wheels/idna-3.7-py3-none-any.whl",
-  "./wheels/ikea_api-2.3.0-py3-none-any.whl",
-  "./wheels/rfc3986-1.5.0-py2.py3-none-any.whl",
-  "./wheels/sniffio-1.3.1-py3-none-any.whl",
-]
+wheels = []
 
 [permissions]
 network = "Download from ikea.com"
@@ -33,6 +23,7 @@ files = "Store downloaded models"
 [build]
 paths_exclude_pattern = [
   "__pycache__/",
+  "/cache/",
   "/.git/",
   "/.github/",
   "/.gitignore",
