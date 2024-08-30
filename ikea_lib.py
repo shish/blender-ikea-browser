@@ -184,7 +184,6 @@ if __name__ == "__main__":
     parser.add_argument("--country", default="ie")
     parser.add_argument("--language", default="en")
     subparsers = parser.add_subparsers(dest="cmd")
-    auth_parser = subparsers.add_parser("auth")
     search_parser = subparsers.add_parser("search")
     search_parser.add_argument("query", type=str, nargs="+")
     metadata_parser = subparsers.add_parser("metadata")
