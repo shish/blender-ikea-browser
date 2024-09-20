@@ -108,7 +108,9 @@ class IkeaBrowserPanel(bpy.types.Panel):
 
     def draw(self, context) -> None:
         if not bpy.app.online_access:
-            self.layout.label(text="IKEA Browser requires online access")
+            self.layout.label(text="Blender is set to offline mode")
+            self.layout.label(text="To use IKEA Browser, enable online access:")
+            self.layout.operator("screen.userpref_show", text="Open Preferences").section = "SYSTEM"
             return
 
         layout = self.layout
