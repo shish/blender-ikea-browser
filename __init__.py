@@ -80,7 +80,11 @@ class IkeaImportOperator(bpy.types.Operator):
 
         try:
             pip = ikea.get_pip(self.itemNo)
-            bpy.ops.import_scene.gltf(filepath=ikea.get_model(self.itemNo))
+            try:
+                bpy.ops.import_scene.gltf(filepath=ikea.get_model(self.itemNo))
+            except AttributeError:
+                self.report({"ERROR"}, "Blender is missing the glTF import add-on, please enable it in Preferences")
+                return {"CANCELLED"}
 
             for obj in bpy.context.selected_objects:
                 assert isinstance(obj, bpy.types.Object)

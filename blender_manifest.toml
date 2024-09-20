@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "ikea_browser"
-version = "0.1.2"
+version = "0.1.3"
 name = "IKEA Browser"
 tagline = "Search and import models from ikea.com"
 maintainer = "Shish <shish@shishnet.org>"
