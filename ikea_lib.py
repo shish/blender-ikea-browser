@@ -51,23 +51,32 @@ class IkeaApiWrapper:
 
         return json.loads(resp)
 
+    def is_item_no(self, itemNo: str) -> bool:
+        return re.match(r"^\d{3}\.?\d{3}\.?\d{2}$", itemNo) is not None
+
     def format(self, itemNo: str) -> str:
         itemNo = re.sub(r"[^0-9]", "", itemNo)
         return itemNo[0:3] + "." + itemNo[3:6] + "." + itemNo[6:8]
 
     def search(self, query: str) -> t.List[t.Dict[str, t.Any]]:
         log.debug("Searching for %s", query)
+
+        url = f"https://sik.search.blue.cdtapps.com/{self.country}/{self.language}/search-result-page"
+        params = {
+            "types": "PRODUCT",
+            "q": query,
+            "size": "24",
+            "c": "sr",
+            "v": "20210322",
+        }
+
+        if self.is_item_no(query):
+            params["size"] = "1"
+        else:
+            params["autocorrect"] = "true"
+            params["subcategories-style"] = "tree-navigation"
+
         try:
-            url = f"https://sik.search.blue.cdtapps.com/{self.country}/{self.language}/search-result-page"
-            params = {
-                "autocorrect": "true",
-                "subcategories-style": "tree-navigation",
-                "types": "PRODUCT",
-                "q": query,
-                "size": "24",
-                "c": "sr",
-                "v": "20210322",
-            }
             search_results = self._get_json(url, params=params)
             # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
             # search_results = json.loads((self.cache_dir.parent / "search.json").read_text())
@@ -78,8 +87,10 @@ class IkeaApiWrapper:
         results = []
         for i in search_results["searchResultPage"]["products"]["main"]["items"]:
             p = i["product"]
+            
+            # Art products are 3D models
             if p["itemType"] != "ART":
-                log.debug(f"Skipping non art product: {p}")
+                log.debug(f"Skipping non-art product: {p}")
                 continue
 
             valid = True
