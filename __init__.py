@@ -89,7 +89,7 @@ class IkeaImportOperator(bpy.types.Operator):
             for obj in bpy.context.selected_objects:
                 assert isinstance(obj, bpy.types.Object)
                 obj["ikeaItemNo"] = self.itemNo
-                obj.name = pip["name"]
+                obj.name = pip["name"] + "_" + ikea.format(obj["ikeaItemNo"])
                 if not obj.parent:
                     obj.location = bpy.context.scene.cursor.location
         except IkeaException as e:

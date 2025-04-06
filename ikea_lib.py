@@ -87,7 +87,7 @@ class IkeaApiWrapper:
         results = []
         for i in search_results["searchResultPage"]["products"]["main"]["items"]:
             p = i["product"]
-            
+
             # Art products are 3D models
             if p["itemType"] != "ART":
                 log.debug(f"Skipping non-art product: {p}")
