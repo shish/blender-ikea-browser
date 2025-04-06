@@ -26,6 +26,9 @@ class IkeaApiWrapper:
         params: t.Dict[str, str] = {},
         headers: t.Dict[str, str] = {},
     ) -> str:
+        log.debug("Request URL: %s", url + "?" + urllib.parse.urlencode(params))
+        log.debug("Request headers: %s", headers)
+        
         try:
             return urllib.request.urlopen(
                 urllib.request.Request(
@@ -43,7 +46,10 @@ class IkeaApiWrapper:
         params: t.Dict[str, str] = {},
         headers: t.Dict[str, str] = {},
     ) -> t.Dict[str, t.Any]:
-        return json.loads(self._get(url, *args, params=params, headers=headers))
+        resp = self._get(url, *args, params=params, headers=headers)
+        log.debug("Response: %s", resp)
+
+        return json.loads(resp)
 
     def format(self, itemNo: str) -> str:
         itemNo = re.sub(r"[^0-9]", "", itemNo)
@@ -73,6 +79,7 @@ class IkeaApiWrapper:
         for i in search_results["searchResultPage"]["products"]["main"]["items"]:
             p = i["product"]
             if p["itemType"] != "ART":
+                log.debug(f"Skipping non art product: {p}")
                 continue
 
             valid = True
@@ -94,6 +101,8 @@ class IkeaApiWrapper:
                         "pipUrl": p["pipUrl"],
                     }
                 )
+                log.debug(f"Found product: {p['name']} ({p['itemNo']})")
+
         return results
 
     def get_pip(self, itemNo: str) -> t.Dict[str, t.Any]:

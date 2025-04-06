@@ -122,6 +122,8 @@ class IkeaBrowserPanel(bpy.types.Panel):
 
         grid = layout.grid_flow(even_columns=True)
         for result in search_results:
+            log.debug("Displaying product: %s", result)
+
             box = grid.box()
             box.label(text=result["mainImageAlt"])
             icon = _get_thumbnail_icon(result["itemNo"], result["mainImageUrl"])
