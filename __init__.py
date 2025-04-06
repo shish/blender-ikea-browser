@@ -118,6 +118,8 @@ class IkeaBrowserPanel(bpy.types.Panel):
             return
 
         layout = self.layout
+        prefs = bpy.context.preferences.addons[__package__].preferences
+        layout.label(text=f"Region: {prefs.country.upper()} - Language: {prefs.language.upper()}")
         layout.prop(context.window_manager, "ikea_search", text="", icon="VIEWZOOM")
 
         if not search_results and context.window_manager.ikea_search:

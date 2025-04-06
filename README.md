@@ -23,5 +23,11 @@ Build the addon .zip file:
 blender --command extension build
 ```
 
-install:
+Installation:
 * blender -> edit -> preferences -> add-ons -> install from disk -> select the .zip file
+
+Configuration:
+* After installation, expand the addon settings in preferences
+* Set your country code (e.g., 'ie' for Ireland, 'fr' for France)
+* Set your language code (e.g., 'en' for English, 'fr' for French)
+* The current region and language will be displayed in the IKEA Browser panel
