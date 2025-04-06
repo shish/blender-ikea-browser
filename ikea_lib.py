@@ -103,6 +103,9 @@ class IkeaApiWrapper:
                 )
                 log.debug(f"Found product: {p['name']} ({p['itemNo']})")
 
+        if not results:
+            log.info("No products found for query: %s", query)
+            
         return results
 
     def get_pip(self, itemNo: str) -> t.Dict[str, t.Any]:

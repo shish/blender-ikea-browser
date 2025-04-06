@@ -120,6 +120,10 @@ class IkeaBrowserPanel(bpy.types.Panel):
         layout = self.layout
         layout.prop(context.window_manager, "ikea_search", text="", icon="VIEWZOOM")
 
+        if not search_results and context.window_manager.ikea_search:
+            layout.label(text="No products or 3D model found for: " + context.window_manager.ikea_search)
+            return
+
         grid = layout.grid_flow(even_columns=True)
         for result in search_results:
             log.debug("Displaying product: %s", result)
