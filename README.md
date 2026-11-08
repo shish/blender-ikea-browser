@@ -24,6 +24,12 @@ blender --command extension build
 ## Manual Installation
 * blender -> edit -> preferences -> add-ons -> install from disk -> select the .zip file
 
+## Test without Blender
+```
+$ uv run ikea_lib.py --verbose search kallax
+$ uv run ikea_lib.py --verbose metadata 00611642
+$ uv run ikea_lib.py --verbose model 00611642
+```
 
 # Configuration
 * After installation, expand the addon settings in preferences
