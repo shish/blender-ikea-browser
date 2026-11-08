@@ -4,3 +4,5 @@ venv
 wheels
 __pycache__
 cache
+get-regions.py
+demo.blend
