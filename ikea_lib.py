@@ -56,23 +56,15 @@ class IkeaApiWrapper:
                 raise IkeaException(f"HTTP Error {response.status}: {response.reason}")
 
             data = response.read()
+            if response.headers.get("content-type", "").startswith("application/json"):
+                log.debug(f"JSON response: {data}")
+            else:
+                log.debug(f"Non-JSON reponse: {len(data)} bytes of {response.headers['content-type']}")
             conn.close()
             return data
         except Exception as e:
             log.exception(f"Error fetching {url}:")
             raise IkeaException(f"Error fetching {url}: {e}")
-
-    def _get_json(
-        self,
-        url: str,
-        *args,
-        params: t.Dict[str, str] = {},
-        headers: t.Dict[str, str] = {},
-    ) -> t.Dict[str, t.Any]:
-        resp = self._get(url, *args, params=params, headers=headers)
-        log.debug("Response: %s", resp)
-
-        return json.loads(resp)
 
     def is_item_no(self, itemNo: str) -> bool:
         return re.match(r"^\d{3}\.?\d{3}\.?\d{2}$", itemNo) is not None
@@ -103,7 +95,7 @@ class IkeaApiWrapper:
             params["subcategories-style"] = "tree-navigation"
 
         try:
-            search_results = self._get_json(url, params=params)
+            search_results = json.loads(self._get(url, params=params))
             # (self.cache_dir.parent / "search.json").write_text(json.dumps(search_results))
             # search_results = json.loads((self.cache_dir.parent / "search.json").read_text())
         except Exception as e:
@@ -154,7 +146,7 @@ class IkeaApiWrapper:
             try:
                 log.info(f"Downloading PIP for #{itemNo}")
                 url = f"https://www.ikea.com/{self.country}/{self.language}/products/{itemNo[5:]}/{itemNo}.json"
-                data = self._get_json(url)
+                data = json.loads(self._get(url))
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps(data))
             except Exception as e:
@@ -215,13 +207,16 @@ class IkeaApiWrapper:
                 if not self.get_exists(itemNo):
                     raise IkeaException(f"No model available for #{itemNo}")
 
-                rotera_data = self._get_json(
+                rotera_data = json.loads(self._get(
                     f"https://web-api.ikea.com/{self.country}/{self.language}/rotera/data/model/{itemNo}/"
-                )
+                ))
                 log.debug("Model metadata: %r", rotera_data)
                 data = self._get(rotera_data["modelUrl"])
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_bytes(data)
+            except json.decoder.JSONDecodeError:
+                log.exception(f"Error downloading model for #{itemNo}:")
+                raise IkeaException(f"No model available for #{itemNo}")
             except Exception as e:
                 log.exception(f"Error downloading model for #{itemNo}:")
                 raise IkeaException(f"Error downloading model for #{itemNo}: {e}")
