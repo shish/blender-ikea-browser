@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "ikea_browser"
-version = "0.4.0"
+version = "0.4.1"
 name = "IKEA Browser"
 tagline = "Search and import models from ikea.com"
 maintainer = "Shish <shish@shishnet.org>"
@@ -24,11 +24,7 @@ files = "Store downloaded models"
 paths_exclude_pattern = [
   "__pycache__/",
   "/cache/",
-  "/.git/",
-  "/.github/",
-  "/.gitignore",
-  "/.mypy_cache/",
-  "/.ruff_cache/",
+  "/.*",
   "/venv/",
   "/*.zip",
   "/*.blend",
